@@ -12,25 +12,6 @@
 
 
 /***************************************************************************************
-GLOBALS
-***************************************************************************************/
-
-//Camera stuff
-float pos[] = {0,0,0};
-float rot[] = {0, 1, 0};
-float headRot[] = {0, 0, 0};
-float camPos[] = {7, 7, 7};
-float angle = 0.0f;
-
-//light stuff
-float lightpos[4] = {0, 2, 0, 0};
-float amb[4] = {1, 1, 1, 1};
-float diff[4] = {2, 2,2, 2};
-float spec[4] = {0, 0, 1, 1};
-bool useLight = true;
-
-
-/***************************************************************************************
 Classes
 ***************************************************************************************/
 
@@ -47,6 +28,9 @@ private:
 	//1 = sphere, 2 = cube, more to come
 	int type;
 
+	//Sizes
+	float size;
+
 public:
 	//Constructors
 	Shape(){
@@ -55,6 +39,7 @@ public:
 		zPos = 0;
 		selected = false;
 		type = 1;
+		scale = 1;
 	}
 
 	Shape(float x, float y, float z, int inputType){
@@ -63,6 +48,7 @@ public:
 		zPos = z;
 		selected = false;
 		type = inputType;
+		scale = 1;
 	}
 
 	//Getters
@@ -88,11 +74,23 @@ public:
     	glColor3d(1,0,0); 
  
 		glPushMatrix();
+		glTranslated(xPos,yPos,zPos);
 
-		if (type == 1){
-		    glTranslated(xPos,yPos,zPos);
-		    glutSolidSphere(1,50,50);
+		switch (type){
+			case 1:
+		    	glutSolidSphere(size,50,50); //radius,slices,stacks
+		    	break;
+		    case 2:
+		    	glutSolidCube(size);
+		    	break;
+		    case 3:
+		    	void glutSolidTorus(size/2, size, 10, 15); //inner, outer, radial sides, ring divisons
+		    	break;
+		    case 4:
+		    	void glutSolidTeapot(size);
+		    	break;
 		}
+
 		glPopMatrix(); 
 	}
 
@@ -119,6 +117,31 @@ public:
 
 };
 
+
+/***************************************************************************************
+GLOBALS
+***************************************************************************************/
+
+//Initialize array holding all scene objects (Shapes)
+Shape sceneShapes[20];
+int numberOfShapes; //Because I don't know how pointers work
+
+//Camera stuff
+float pos[] = {0,0,0};
+float rot[] = {0, 1, 0};
+float headRot[] = {0, 0, 0};
+float camPos[] = {7, 7, 7};
+float angle = 0.0f;
+
+//light stuff
+float lightpos[4] = {0, 2, 0, 0};
+float amb[4] = {1, 1, 1, 1};
+float diff[4] = {2, 2,2, 2};
+float spec[4] = {0, 0, 1, 1};
+bool useLight = true;
+
+
+
 void keyboard(unsigned char key, int x, int y)
 {
 
@@ -129,31 +152,6 @@ void keyboard(unsigned char key, int x, int y)
 		case 27:
 			exit (0);
 			break;
-
-		// //WASD: Move light source
-		// case 'a':
-		// case 'A':
-		// 	if(lightpos[0] > -15)
-		// 		lightpos[0]-=1;
-		// 	break;
-
-		// case 'w':
-		// case 'W':
-		// 	if(lightpos[2] > -15)
-		// 		lightpos[2] -= 1;
-		// 	break;
-		// case 'd':
-		// case 'D':
-		// 	if(lightpos[0] < 15)
-		// 		lightpos[0]+=1;
-		// 	break;
-
-		// case 's':
-		// case 'S':
-		// 	if(lightpos[2] < 15)
-		// 		lightpos[2] += 1;
-		// 	//printf('hi %f\n', lightpos[1]);
-		// 	break;
 
 		//Toggle light
 		case 'f':
@@ -230,8 +228,11 @@ void init(void)
 }
 
 //Draws and colours terrain depending on height
-void drawTerrain(float* pos, float* rot) {
-
+void drawShapes() {
+	for (int i = 0; i < numberOfShapes; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
+		sceneShapes[i].draw();
+		printf("%i",i);
+	}
 }
 
 
@@ -260,17 +261,15 @@ void display(void)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, m_spec);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny);
 
+	drawShapes();
 	glutSwapBuffers();
 }
 
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
-
+	numberOfShapes = 0;
 	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
-	
-	//Initialize array holding all scene objects (Shapes)
-	Shape sceneShapes[10];
 
 	glutInit(&argc, argv);		//starts up GLUT
 	
