@@ -18,19 +18,6 @@ GLOBALS
 //Terrain heightmap
 float terrain[300][300];
 
-//Parallel array to terrain[][] that signies if the point should be used in
-//the circles algorithm.
-bool toCircle[300][300];
-
-//0 = solid, 1 = wireframe, 2 = both
-int drawMode = 0;
-
-//Terrain dimensions
-int terrainSizeX = 0;
-int terrainSizeZ = 0;
-
-float terrainCircleSize = 30;
-
 //Camera stuff
 float pos[] = {0,0,0};
 float rot[] = {0, 1, 0};
@@ -49,60 +36,8 @@ bool useLight = true;
 int selX = 0;
 int selZ = 0;
 
-//Circles algorithm used to make hills out of a single hightened point
-void circles(int centerX, int centerZ, float disp){
-
-	for (int i = 0; i < terrainSizeX-1; i++){
-		for (int j = 0; j < terrainSizeZ-1; j++){
-			//pythagorean
-			float distance = sqrt(pow((i-centerX),2) + pow((j-centerZ),2));
-
-			float pd = (distance * 2) / terrainCircleSize;
-
-			if (fabs(pd) <= 1.0 && pd != 0){
-				terrain[i][j] += (disp/2 + (cos(pd*3.14) * disp/2));
-			}
-		}
-	}
-
-	//For some reason the center of the circle had a different height.
-	//This ensures that is is the appropriate height
-	terrain[centerX][centerZ] = (terrain[centerX+1][centerZ] + terrain[centerX][centerZ+1] + terrain[centerX-1][centerZ] + terrain[centerX][centerZ-1]) / 4;
-}
-
-//Resets terrain to flat
-void resetTerrain(){
-		for (int i = 0; i < terrainSizeX; i++){
-			for (int j = 0; j < terrainSizeZ; j++){
-				toCircle[i][j] = false;
-				terrain[i][j] = 0;
-			}
-		}
-}
-
 //Randomly generates terrain and applies circles algorithm
 void generateTerrain(){	
-	//Loop through terrain[][], randomly assign height values
-	//Edge cases ignored to remove artifacts
-	for (int i = 1; i < terrainSizeX-1; i++){
-		for (int j = 1; j < terrainSizeZ-1; j++){
-
-			if (rand() % 1000 >= 994){ //Lower second number = more hilly
-				terrain[i][j] = (rand() % 100)/100;
-				toCircle[i][j] = true;
-			}
-			else
-				terrain[i][j] = 0;
-		}
-	}
-
-	//Run hightened points through circles algorithm
-	for (int i = 0; i < terrainSizeX; i++){
-		for (int j = 0; j < terrainSizeZ; j++){
-			if(toCircle[i][j])
-				circles(i,j,1);
-		}
-	}
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -116,46 +51,30 @@ void keyboard(unsigned char key, int x, int y)
 			exit (0);
 			break;
 
-		//Reset terrain to flat
-		case 'r':
-		case 'R':
-			resetTerrain();
-			generateTerrain();
-			break;
+		// //WASD: Move light source
+		// case 'a':
+		// case 'A':
+		// 	if(lightpos[0] > -15)
+		// 		lightpos[0]-=1;
+		// 	break;
 
-		//Toggle draw mode, solid/wire/both
-		case 'e':
-		case 'E':
-			drawMode++;
-			if (drawMode == 3)
-				drawMode = 0;
-			printf("Draw Mode: %i", drawMode);
-			break;
+		// case 'w':
+		// case 'W':
+		// 	if(lightpos[2] > -15)
+		// 		lightpos[2] -= 1;
+		// 	break;
+		// case 'd':
+		// case 'D':
+		// 	if(lightpos[0] < 15)
+		// 		lightpos[0]+=1;
+		// 	break;
 
-		//WASD: Move light source
-		case 'a':
-		case 'A':
-			if(lightpos[0] > -15)
-				lightpos[0]-=1;
-			break;
-
-		case 'w':
-		case 'W':
-			if(lightpos[2] > -15)
-				lightpos[2] -= 1;
-			break;
-		case 'd':
-		case 'D':
-			if(lightpos[0] < 15)
-				lightpos[0]+=1;
-			break;
-
-		case 's':
-		case 'S':
-			if(lightpos[2] < 15)
-				lightpos[2] += 1;
-			//printf('hi %f\n', lightpos[1]);
-			break;
+		// case 's':
+		// case 'S':
+		// 	if(lightpos[2] < 15)
+		// 		lightpos[2] += 1;
+		// 	//printf('hi %f\n', lightpos[1]);
+		// 	break;
 
 		//Toggle light
 		case 'f':
@@ -169,50 +88,6 @@ void keyboard(unsigned char key, int x, int y)
 				glEnable(GL_LIGHTING);
 				useLight = true;
 			}
-
-		//IJKL move terrain selection
-		case 'i':
-		case 'I':
-			if (selZ < terrainSizeZ-3)
-				selZ++;
-			break;
-
-		case 'k':
-		case 'K':
-			if (selZ > 3)
-				selZ--;
-			break;
-
-		case 'j':
-		case 'J':
-			if (selX > 3)
-				selX--;
-			break;
-
-		case 'l':
-		case 'L':
-			if (selX < terrainSizeX-3)
-				selX++;
-			break;
-
-
-		//Increase height of selected terrain
-		case 'y':
-		case 'Y':
-			terrain[selX][selZ] += 0.01;
-			toCircle[selX][selZ] = true;
-			circles(selX, selZ, 1);
-			break; 
-
-		//Decrease height (doesn't work as the circles algorithm doesn't work completely
-		//as it raises the values around the hightened point too much)
-		case 'h':
-		case 'H':
-			terrain[selX][selZ] -= 0.1;
-			toCircle[selX][selZ] = true;
-			circles(selX, selZ, 1);
-			break; 
-
 			
 	}
 	glutPostRedisplay();
@@ -276,74 +151,10 @@ void init(void)
 }
 
 //Draws and colours terrain depending on height
-void drawTerrain(float* pos, float* rot)
-{
+void drawTerrain(float* pos, float* rot) {
 
-	for (int i = 1; i < terrainSizeX-2; i++){
-		for (int j = 1; j < terrainSizeZ-2; j++){
-			glBegin(GL_QUAD_STRIP);
-
-			//Determine colour
-			float R = 0.0;
-			float G = 0.4;
-			float B = 0.0;
-
-			R = terrain[i][j] * 0.5 - 0.3;
-			B = terrain[i][j] * 1.2 - 0.8;
-
-			//Make selected strip red
-			if ((i == selX) && j == selZ)
-				glColor3f(1, 0, 0);
-			else
-				glColor3f(R, G, B);
-
-			//Ensure the terrain is centered, and draw it
-			//Each x,z quad is 0.1x0.1 units, hence all the multiplication
-			float scaledX = i*0.1;
-			float scaledZ = j*0.1;
-			float centerViewZ = (float)terrainSizeZ / 20;
-			float centerViewX = (float)terrainSizeX / 20;
-
-			glVertex3f(scaledX-centerViewX, terrain[i][j], scaledZ-centerViewZ);
-			glVertex3f(scaledX-centerViewX + 0.1, terrain[i+1][j], scaledZ-centerViewZ);
-			glVertex3f(scaledX-centerViewX, terrain[i][j+1], scaledZ + 0.1-centerViewZ);
-			glVertex3f(scaledX-centerViewX + 0.1, terrain[i+1][j+1], scaledZ + 0.1-centerViewZ);
-			glEnd();
-		}
-	}
-	
-	glFlush();
 }
 
-//Draw wireframe of the terrain
-void drawWire(float* pos, float* rot)
-{
-
-	for (int i = 1; i < terrainSizeX-2; i++){
-		for (int j = 1; j < terrainSizeZ-2; j++){
-			glBegin(GL_LINES);
-
-			glColor3f(1, 1, 1);
-
-			//Each x,z quad is 0.1x0.1 units, hence all the multiplication
-			float scaledX = i*0.1;
-			float scaledZ = j*0.1;
-			float centerViewZ = (float)terrainSizeZ / 20;
-			float centerViewX = (float)terrainSizeX / 20;
-
-			glVertex3f(scaledX-centerViewX, terrain[i][j], scaledZ-centerViewZ);
-			glVertex3f(scaledX-centerViewX, terrain[i][j+1], scaledZ + 0.1-centerViewZ);
-			glEnd();
-
-			glBegin(GL_LINES);
-			glVertex3f(scaledX-centerViewX, terrain[i][j], scaledZ-centerViewZ);
-			glVertex3f(scaledX-centerViewX + 0.1, terrain[i+1][j], scaledZ-centerViewZ);
-			glEnd();
-		}
-	}
-	
-	glFlush();
-}
 
 /* display function - GLUT display callback function
  *		clears the screen, sets the camera position, draws the ground plane and movable box
@@ -370,16 +181,6 @@ void display(void)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, m_spec);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny);
 
-	if(drawMode == 0)
-		drawTerrain(pos, rot);
-	else if(drawMode == 1)
-		drawWire(pos,rot);
-	else{
-		drawTerrain(pos,rot);
-		drawWire(pos,rot);
-	}
-
-
 	glutSwapBuffers();
 }
 
@@ -387,20 +188,7 @@ void display(void)
 int main(int argc, char** argv)
 {
 
-	printf("\nWelcome to Joseph's Terrain Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'e' -> Toggle wireframe modes'\n'f' -> Toggle lighting\n'i,j,k,l' -> Move terrain selection (red square)\n'y' -> Increase height of selected terrain\n'q' -> Quit\n\n");
-
-
-	//Obtain surface dimensions
-	printf("Please enter the X dimension of the terrain.\n");
-	scanf("%i", &terrainSizeX);
-	printf("Please enter the Z dimension of the terrain.\n");
-	scanf("%i", &terrainSizeZ);
-	printf("X: %i Z: %i\n", terrainSizeX, terrainSizeZ);
-
-	selX = terrainSizeX-3;
-	selZ = terrainSizeZ-3;
-
-	generateTerrain();
+	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
 
 
 	glutInit(&argc, argv);		//starts up GLUT
@@ -411,7 +199,7 @@ int main(int argc, char** argv)
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
 
-	glutCreateWindow("A2:Terrain   manaloja/1304227");	//creates the window
+	glutCreateWindow("A3:Modelling   manaloja/1304227");	//creates the window
 	glutDisplayFunc(display);	//registers "display" as the display callback function
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
