@@ -15,9 +15,6 @@
 GLOBALS
 ***************************************************************************************/
 
-//Terrain heightmap
-float terrain[300][300];
-
 //Camera stuff
 float pos[] = {0,0,0};
 float rot[] = {0, 1, 0};
@@ -32,13 +29,95 @@ float diff[4] = {2, 2,2, 2};
 float spec[4] = {0, 0, 1, 1};
 bool useLight = true;
 
-//selected quad
-int selX = 0;
-int selZ = 0;
 
-//Randomly generates terrain and applies circles algorithm
-void generateTerrain(){	
-}
+/***************************************************************************************
+Classes
+***************************************************************************************/
+
+class Shape {
+private:
+	//Shape location
+	float xPos;
+	float yPos;
+	float zPos;
+
+	//Whether the shape is curently selected by user or not
+	bool selected;
+
+	//1 = sphere, 2 = cube, more to come
+	int type;
+
+public:
+	//Constructors
+	Shape(){
+		xPos = 0;
+		yPos = 0;
+		zPos = 0;
+		selected = false;
+		type = 1;
+	}
+
+	Shape(float x, float y, float z, int inputType){
+		xPos = x;
+		yPos = y;
+		zPos = z;
+		selected = false;
+		type = inputType;
+	}
+
+	//Getters
+	float getXPos(){
+		return xPos;
+	}
+
+	float getYPos(){
+		return yPos;
+	}
+
+	float getZPos(){
+		return zPos;
+	}
+
+	float getType(){
+		return type;
+	}
+
+	//Functions
+	void draw(){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    	glColor3d(1,0,0); 
+ 
+		glPushMatrix();
+
+		if (type == 1){
+		    glTranslated(xPos,yPos,zPos);
+		    glutSolidSphere(1,50,50);
+		}
+		glPopMatrix(); 
+	}
+
+	//Move object in specified direction
+	void move(float moveX, float moveY, float moveZ){
+		xPos += moveX;
+		yPos += moveY;
+		zPos += moveZ;
+	}
+
+	//Rotate character, use string input to determine CW or CCW?
+	void rotate(){
+
+	}
+
+	//Does the player jump?
+	void select(){
+		selected = true;
+	}
+
+	void deselect(){
+		selected = false;
+	}
+
+};
 
 void keyboard(unsigned char key, int x, int y)
 {
@@ -189,7 +268,9 @@ int main(int argc, char** argv)
 {
 
 	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
-
+	
+	//Initialize array holding all scene objects (Shapes)
+	Shape sceneShapes[10];
 
 	glutInit(&argc, argv);		//starts up GLUT
 	
