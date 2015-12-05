@@ -71,11 +71,18 @@ public:
 		return size;
 	}
 
+	bool isSelected(){
+		return selected;
+	}
+
 	//Functions
 	void draw(){
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    	glColor3d(1,1,1); 
- 
+
+		if (!selected)
+    		glColor3d(0.1 , 0.1, 0.1); 
+ 		else
+ 			glColor3d(1, 0, 0);
+
 		glPushMatrix();
 		glTranslated(xPos,yPos,zPos);
 
@@ -125,7 +132,7 @@ GLOBALS
 
 //Initialize array holding all scene objects (Shapes)
 Shape sceneShapes[20];
-int activeShapes[20]; //Because I don't know how pointers work
+bool activeShapes[20]; //Because I don't know how pointers work
 
 //Camera stuff
 float pos[] = {0,0,0};
@@ -143,6 +150,10 @@ bool useLight = true;
 
 
 
+/***************************************************************************************
+CONTROLS
+***************************************************************************************/
+
 void keyboard(unsigned char key, int x, int y)
 {
 
@@ -152,6 +163,37 @@ void keyboard(unsigned char key, int x, int y)
 		case 'q':
 		case 27:
 			exit (0);
+			break;
+
+
+		//Cycle selection
+		case 'z':
+			int previousSelection;
+			//Find selected object, deselect, remember which one it is
+			for (int i = 0; i < 20; i++){
+				//If active and selected, deselect
+				if (activeShapes[i] && sceneShapes[i].isSelected()){
+					sceneShapes[i].deselect();
+					printf("Shape #%i deselected\n", i);
+					previousSelection = i;
+				}
+			}
+
+			//Find the next object to select
+			for (int j = 0; j < 20; j++){
+
+				int nextToSelect = previousSelection+j + 1;
+
+				if (nextToSelect >= 20)
+					nextToSelect = j;
+
+				if (!sceneShapes[nextToSelect].isSelected()){
+					sceneShapes[nextToSelect].select();
+					printf("Shape #%i selected\n", nextToSelect);
+					break;
+				}
+			}
+
 			break;
 
 		//Toggle light
@@ -206,6 +248,12 @@ void special(int key, int x, int y)
 	glutPostRedisplay();
 }
 
+
+
+/***************************************************************************************
+THE REST (idk what to call them)
+***************************************************************************************/
+
 void init(void)
 {
 	glClearColor(0, 0, 0, 0);
@@ -230,9 +278,13 @@ void init(void)
 
 //Draws and colours terrain depending on height
 void drawShapes() {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	for (int i = 0; i < 20; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
-		if (activeShapes[i] == 1) {
+		if (activeShapes[i]) {
 			sceneShapes[i].draw();
+			//printf("\nShape #%i drawn.", i);
 		}
 	}
 }
@@ -271,9 +323,13 @@ void display(void)
 int main(int argc, char** argv)
 {
 	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
-	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 2);
-	activeShapes[0] = 1;
+	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 4);
+	activeShapes[0] = true;
 
+	sceneShapes[1].set(3.0, 3.0 , 3.0, 1.0, 2);
+	activeShapes[1] = true;
+
+	sceneShapes[0].select();
 	glutInit(&argc, argv);		//starts up GLUT
 	
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -288,7 +344,7 @@ int main(int argc, char** argv)
 	glutSpecialFunc(special);
 
 	//Culling
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 
