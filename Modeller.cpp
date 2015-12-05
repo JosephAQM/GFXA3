@@ -39,16 +39,15 @@ public:
 		zPos = 0;
 		selected = false;
 		type = 1;
-		scale = 1;
 	}
 
-	Shape(float x, float y, float z, int inputType){
+	void set(float x, float y, float z, float inputSize, int inputType){
 		xPos = x;
 		yPos = y;
 		zPos = z;
 		selected = false;
 		type = inputType;
-		scale = 1;
+		size = inputSize;
 	}
 
 	//Getters
@@ -68,26 +67,30 @@ public:
 		return type;
 	}
 
+	float getSize(){
+		return size;
+	}
+
 	//Functions
 	void draw(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    	glColor3d(1,0,0); 
+    	glColor3d(1,1,1); 
  
 		glPushMatrix();
 		glTranslated(xPos,yPos,zPos);
 
 		switch (type){
 			case 1:
-		    	glutSolidSphere(size,50,50); //radius,slices,stacks
+		    	glutSolidSphere(size, 50, 50); //radius,slices,stacks
 		    	break;
 		    case 2:
 		    	glutSolidCube(size);
 		    	break;
 		    case 3:
-		    	void glutSolidTorus(size/2, size, 10, 15); //inner, outer, radial sides, ring divisons
+		    	glutSolidTorus(size/2, size, 10, 15); //inner, outer, radial sides, ring divisons
 		    	break;
 		    case 4:
-		    	void glutSolidTeapot(size);
+		    	glutSolidTeapot(size);
 		    	break;
 		}
 
@@ -101,12 +104,10 @@ public:
 		zPos += moveZ;
 	}
 
-	//Rotate character, use string input to determine CW or CCW?
 	void rotate(){
 
 	}
 
-	//Does the player jump?
 	void select(){
 		selected = true;
 	}
@@ -124,7 +125,7 @@ GLOBALS
 
 //Initialize array holding all scene objects (Shapes)
 Shape sceneShapes[20];
-int numberOfShapes; //Because I don't know how pointers work
+int activeShapes[20]; //Because I don't know how pointers work
 
 //Camera stuff
 float pos[] = {0,0,0};
@@ -229,9 +230,10 @@ void init(void)
 
 //Draws and colours terrain depending on height
 void drawShapes() {
-	for (int i = 0; i < numberOfShapes; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
-		sceneShapes[i].draw();
-		printf("%i",i);
+	for (int i = 0; i < 20; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
+		if (activeShapes[i] == 1) {
+			sceneShapes[i].draw();
+		}
 	}
 }
 
@@ -268,8 +270,9 @@ void display(void)
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
-	numberOfShapes = 0;
 	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
+	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 2);
+	activeShapes[0] = 1;
 
 	glutInit(&argc, argv);		//starts up GLUT
 	
