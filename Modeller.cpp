@@ -1,3 +1,12 @@
+/*
+Joseph Manalo
+1304227
+manaloja
+
+SE 3GC3 Assignment 3
+Saturday, December 5, 2015
+*/
+
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <GLUT/glut.h>
@@ -22,6 +31,11 @@ private:
 	float yPos;
 	float zPos;
 
+	//Shape rotation
+	float xRot;
+	float yRot;
+	float zRot;
+
 	//Whether the shape is curently selected by user or not
 	bool selected;
 
@@ -45,6 +59,9 @@ public:
 		xPos = x;
 		yPos = y;
 		zPos = z;
+		xRot = 0;
+		yRot = 0;
+		zRot = 0;
 		selected = false;
 		type = inputType;
 		size = inputSize;
@@ -77,13 +94,20 @@ public:
 
 	//Functions
 	void draw(){
+		glPushMatrix();
 
+		glRotatef(xRot, 1.0, 0.0, 0.0);
+		glRotatef(yRot, 0.0, 1.0, 0.0);
+		glRotatef(zRot, 0.0, 0.0, 1.0);
+
+
+		
 		if (!selected)
     		glColor3d(0.1 , 0.1, 0.1); 
  		else
  			glColor3d(1, 0, 0);
 
-		glPushMatrix();
+
 		glTranslated(xPos,yPos,zPos);
 
 		switch (type){
@@ -111,8 +135,10 @@ public:
 		zPos += moveZ;
 	}
 
-	void rotate(){
-
+	void rotate(float rotateX, float rotateY, float rotateZ){
+		xRot += rotateX;
+		yRot += rotateY;
+		zRot += rotateZ;
 	}
 
 	void increaseSize(float changeAmount){
@@ -230,11 +256,59 @@ void keyboard(unsigned char key, int x, int y)
 				useLight = true;
 			}
 
+		case 'x':
+		case 'X':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].increaseSize(0.1);
+			}
+			break;
+
+		case 'c':
+		case 'C':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].decreaseSize(0.1);
+			}
+			break;
+
+		case 'w':
+		case 'W':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].move(-0.1,0,0);
+			}
+			break;
+
+		case 's':
+		case 'S':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].move(0.1,0,0);
+			}
+			break;
+
+		case 'a':
+		case 'A':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].move(0,0,0.1);
+			}
+			break;
+
+		case 'd':
+		case 'D':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].move(0,0,-0.1);
+			}
+			break;
+
 		case 'r':
 		case 'R':
 			for (int i = 0; i < 20; i++){
 				if (activeShapes[i] && sceneShapes[i].isSelected())
-					sceneShapes[i].increaseSize(0.1);
+					sceneShapes[i].move(0,0.1,0);
 			}
 			break;
 
@@ -242,7 +316,7 @@ void keyboard(unsigned char key, int x, int y)
 		case 'F':
 			for (int i = 0; i < 20; i++){
 				if (activeShapes[i] && sceneShapes[i].isSelected())
-					sceneShapes[i].decreaseSize(0.1);
+					sceneShapes[i].move(0,-0.1,0);
 			}
 			break;
 
@@ -360,7 +434,7 @@ void display(void)
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
-	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nArrow Keys -> Camera movement\n'q' -> Quit\n\n");
+	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'SHIFT + wasd'\nQuit -> 'q'\n\n");
 	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 4);
 	activeShapes[0] = true;
 
