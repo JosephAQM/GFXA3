@@ -115,6 +115,14 @@ public:
 
 	}
 
+	void increaseSize(float changeAmount){
+		size += changeAmount;
+	}
+
+	void decreaseSize(float changeAmount){
+		size -= changeAmount;
+	}
+
 	void select(){
 		selected = true;
 	}
@@ -186,6 +194,8 @@ void cycleSelect(){
 }
 
 
+
+
 /***************************************************************************************
 CONTROLS
 ***************************************************************************************/
@@ -208,8 +218,8 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 
 		//Toggle light
-		case 'f':
-		case 'F':
+		case 'l':
+		case 'L':
 			if (useLight) {
 				glDisable(GL_LIGHTING);
 				useLight = false;
@@ -219,6 +229,23 @@ void keyboard(unsigned char key, int x, int y)
 				glEnable(GL_LIGHTING);
 				useLight = true;
 			}
+
+		case 'r':
+		case 'R':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].increaseSize(0.1);
+			}
+			break;
+
+		case 'f':
+		case 'F':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].decreaseSize(0.1);
+			}
+			break;
+
 			
 	}
 	glutPostRedisplay();
