@@ -149,6 +149,42 @@ float spec[4] = {0, 0, 1, 1};
 bool useLight = true;
 
 
+/***************************************************************************************
+GENERAL FUNCTIONS
+***************************************************************************************/
+
+void cycleSelect(){
+	int previousSelection;
+	//Find selected object, deselect, remember which one it is
+	for (int i = 0; i < 20; i++){
+		//If active and selected, deselect
+		if (activeShapes[i] && sceneShapes[i].isSelected()){
+			sceneShapes[i].deselect();
+			//printf("Shape #%i deselected\n", i);
+			previousSelection = i;
+			break;
+		}
+	}
+
+	//Find the next object to select
+	for (int j = 0; j < 20; j++){
+
+		int nextToSelect = previousSelection+j + 1;
+
+		if (nextToSelect >= 20)
+			nextToSelect = j;
+
+		if (activeShapes[nextToSelect] && !sceneShapes[nextToSelect].isSelected()){
+			sceneShapes[nextToSelect].select();
+			//printf("Shape #%i selected\n", nextToSelect);
+			break;
+		}
+
+		if (j == 19)
+			sceneShapes[0].select();
+	}
+}
+
 
 /***************************************************************************************
 CONTROLS
@@ -168,32 +204,7 @@ void keyboard(unsigned char key, int x, int y)
 
 		//Cycle selection
 		case 'z':
-			int previousSelection;
-			//Find selected object, deselect, remember which one it is
-			for (int i = 0; i < 20; i++){
-				//If active and selected, deselect
-				if (activeShapes[i] && sceneShapes[i].isSelected()){
-					sceneShapes[i].deselect();
-					printf("Shape #%i deselected\n", i);
-					previousSelection = i;
-				}
-			}
-
-			//Find the next object to select
-			for (int j = 0; j < 20; j++){
-
-				int nextToSelect = previousSelection+j + 1;
-
-				if (nextToSelect >= 20)
-					nextToSelect = j;
-
-				if (!sceneShapes[nextToSelect].isSelected()){
-					sceneShapes[nextToSelect].select();
-					printf("Shape #%i selected\n", nextToSelect);
-					break;
-				}
-			}
-
+			cycleSelect();
 			break;
 
 		//Toggle light
