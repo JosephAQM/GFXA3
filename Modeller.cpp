@@ -187,6 +187,7 @@ bool useLight = true;
 GENERAL FUNCTIONS
 ***************************************************************************************/
 
+//Cycle select through objects
 void cycleSelect(){
 	int previousSelection;
 	//Find selected object, deselect, remember which one it is
@@ -219,7 +220,21 @@ void cycleSelect(){
 	}
 }
 
+//Cycles through all the points in a line, checks if each object on the list interects with it
+int rayCasting(float mouseX, float mouseY){
 
+	return -1;
+}
+
+void mouse(int btn, int state, int x, int y){
+	switch(btn){
+		case GLUT_LEFT_BUTTON:
+			if(state==GLUT_DOWN){
+				printf("Mouse button pressed at %i %i \n", x, y);
+			}
+			break;
+	}
+}
 
 
 /***************************************************************************************
@@ -255,6 +270,7 @@ void keyboard(unsigned char key, int x, int y)
 				glEnable(GL_LIGHTING);
 				useLight = true;
 			}
+			break;
 
 		case 'x':
 		case 'X':
@@ -452,6 +468,7 @@ int main(int argc, char** argv)
 
 	glutCreateWindow("A3:Modelling   manaloja/1304227");	//creates the window
 	glutDisplayFunc(display);	//registers "display" as the display callback function
+	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 
