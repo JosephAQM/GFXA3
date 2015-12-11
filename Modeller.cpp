@@ -45,6 +45,8 @@ private:
 	//Sizes
 	float size;
 
+	float hitBoxSize;
+
 public:
 	//Constructors
 	Shape(){
@@ -194,6 +196,10 @@ int cX;
 int cY;
 int cZ;
 
+int dY;
+int dX;
+int dZ;
+
 
 /***************************************************************************************
 GENERAL FUNCTIONS
@@ -259,13 +265,21 @@ void mouseToWorld(int mouseX, int mouseY, int mouseZ){
 int rayCasting(int mouseX, int mouseY){
 	mouseToWorld(mouseX, mouseY, 1);
 
-	float deltaX = (mouseX - worldX);
-	float deltaY = (mouseY - worldY);
-	float deltaZ = (0 - worldZ);
+	// float deltaX = (camPos[0] - worldX);
+	// float deltaY = (camPos[1] - worldY);
+	// float deltaZ = (camPos[2] - worldZ);
+
+	float deltaX = (worldX - camPos[0]);
+	float deltaY = (worldY - camPos[1]);
+	float deltaZ = (worldZ - camPos[2]);
 
 	cX = camPos[0];
 	cY = camPos[1];
 	cZ = camPos[2];
+
+	dY = deltaY;
+	dX = deltaX;
+	dZ = deltaZ;
 
 	return -1;
 }
@@ -462,7 +476,7 @@ void drawShapes() {
 	glBegin(GL_LINES);
 		glColor3f(1, 1, 1);
 		glVertex3f(cX, cY, cZ);
-		glVertex3f(worldX, worldY, worldZ);
+		glVertex3f(worldX + dX*10, worldY+dY*10, worldZ + dZ*10);
 	glEnd();
 
 }
