@@ -39,12 +39,13 @@ private:
 	//Whether the shape is curently selected by user or not
 	bool selected;
 
-	//1 = sphere, 2 = cube, more to come
+	//1 = sphere, 2 = cube, 3 = torus, 4 = teapot
 	int type;
 
 	//Sizes
 	float size;
 
+	//Hitbox side length
 	float hitBoxSize;
 
 public:
@@ -101,8 +102,6 @@ public:
 		glRotatef(xRot, 1.0, 0.0, 0.0);
 		glRotatef(yRot, 0.0, 1.0, 0.0);
 		glRotatef(zRot, 0.0, 0.0, 1.0);
-
-
 		
 		if (!selected)
     		glColor3d(0.1 , 0.1, 0.1); 
@@ -130,6 +129,43 @@ public:
 		glPopMatrix(); 
 	}
 
+	void drawHitBox(){
+		generateHitBox();
+		glPushMatrix();
+		glColor3d(0, 1, 0);
+		glTranslated(xPos,yPos,zPos);
+		glutWireCube(hitBoxSize);
+		glPopMatrix(); 
+	}
+
+	//Checks if the given point is within the shape's hitbox
+	bool isInHitBox(float x, float y, float z){
+		if ((x <= xPos+(hitBoxSize/2)) && (x >= xPos-(hitBoxSize/2))){
+			if ((y <= yPos+(hitBoxSize/2)) && (y >= yPos-(hitBoxSize/2))){
+				if ((z <= zPos+(hitBoxSize/2)) && (z >= zPos-(hitBoxSize/2))){
+					return true;
+				}
+			}	
+		}
+			
+		return false;
+	}
+
+	void generateHitBox(){
+		if (type == 1) //sphere
+			hitBoxSize = size * 1.8;
+
+		else if (type == 2) //cube
+			hitBoxSize = size * 1;
+		
+		else if (type == 3) //torus
+			hitBoxSize = size * 2.3;
+		
+		else if (type == 4) //teapot
+			hitBoxSize = size * 2;
+
+	}
+
 	//Move object in specified direction
 	void move(float moveX, float moveY, float moveZ){
 		xPos += moveX;
@@ -145,10 +181,12 @@ public:
 
 	void increaseSize(float changeAmount){
 		size += changeAmount;
+		hitBoxSize += changeAmount;
 	}
 
 	void decreaseSize(float changeAmount){
 		size -= changeAmount;
+		hitBoxSize -= changeAmount;
 	}
 
 	void select(){
@@ -160,7 +198,6 @@ public:
 	}
 
 };
-
 
 /***************************************************************************************
 GLOBALS
@@ -187,18 +224,21 @@ bool useLight = true;
 //Ray casting stuff
 
 //Coordinates of mouse click in the world
-int worldX;
-int worldY;
-int worldZ;
+float worldX;
+float worldY;
+float worldZ;
 
 //camPos coords when click occurs
-int cX;
-int cY;
-int cZ;
+float cX;
+float cY;
+float cZ;
 
-int dY;
-int dX;
-int dZ;
+//Mouse ray slopes (d for delta)
+float deltaY;
+float deltaX;
+float deltaZ;
+
+bool drawHitBoxes;
 
 
 /***************************************************************************************
@@ -236,6 +276,14 @@ void cycleSelect(){
 	}
 }
 
+void unSelectAll(){
+	for (int i = 0; i < 20; i++){
+		if (activeShapes[i]){
+			sceneShapes[i].deselect();
+		}
+	}
+}
+
 void mouseToWorld(int mouseX, int mouseY, int mouseZ){
     GLint viewport[4];
     GLdouble modelMatrix[16];   
@@ -265,21 +313,32 @@ void mouseToWorld(int mouseX, int mouseY, int mouseZ){
 int rayCasting(int mouseX, int mouseY){
 	mouseToWorld(mouseX, mouseY, 1);
 
-	// float deltaX = (camPos[0] - worldX);
-	// float deltaY = (camPos[1] - worldY);
-	// float deltaZ = (camPos[2] - worldZ);
+	//Calculate slopes for ray
+	deltaX = (worldX - camPos[0]);
+	deltaY = (worldY - camPos[1]);
+	deltaZ = (worldZ - camPos[2]);
 
-	float deltaX = (worldX - camPos[0]);
-	float deltaY = (worldY - camPos[1]);
-	float deltaZ = (worldZ - camPos[2]);
-
+	//Save camera position for ray drawing
 	cX = camPos[0];
 	cY = camPos[1];
 	cZ = camPos[2];
 
-	dY = deltaY;
-	dX = deltaX;
-	dZ = deltaZ;
+	//Go through points in the ray
+	for (int i = 0; i < 100000; i++){ // lol overkill resolution
+		float linePointX = cX + (worldX + deltaX)*(float)i*0.00001;
+		float linePointY = cY + (worldY + deltaY)*(float)i*0.00001;
+		float linePointZ = cZ + (worldZ + deltaZ)*(float)i*0.00001;
+
+		//Loop through every active shape in the array
+		for (int j = 0; j < 20; j++){
+			if (activeShapes[j]){
+				if(sceneShapes[j].isInHitBox(linePointX, linePointY, linePointZ)){
+					printf("Selected: %i", j);
+					return j;
+				}
+			}
+		}
+	}
 
 	return -1;
 }
@@ -288,8 +347,13 @@ void mouse(int btn, int state, int x, int y){
 	switch(btn){
 		case GLUT_LEFT_BUTTON:
 			if(state==GLUT_DOWN){
-				printf("Mouse button pressed at %i %i \n", x, y);
-				rayCasting(x, y);
+				int toSelect = rayCasting(x, y);
+
+				if (toSelect != -1){
+					unSelectAll();
+					sceneShapes[toSelect].select();
+
+				}
 			}
 			break;
 	}
@@ -395,6 +459,13 @@ void keyboard(unsigned char key, int x, int y)
 			}
 			break;
 
+		case 'b':
+		case 'B':
+			if (drawHitBoxes)
+				drawHitBoxes = false;
+			else
+				drawHitBoxes = true;
+			break;
 			
 	}
 	glutPostRedisplay();
@@ -428,8 +499,6 @@ void special(int key, int x, int y)
 		case GLUT_KEY_END:
 			camPos[1] -= 0.1;
 			break;
-
-
 
 	}
 	glutPostRedisplay();
@@ -470,17 +539,22 @@ void drawShapes() {
 	for (int i = 0; i < 20; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
 		if (activeShapes[i]) {
 			sceneShapes[i].draw();
+			if (drawHitBoxes)
+				sceneShapes[i].drawHitBox();
 		}
 	}
-	
-	glBegin(GL_LINES);
-		glColor3f(1, 1, 1);
-		glVertex3f(cX, cY, cZ);
-		glVertex3f(worldX + dX*10, worldY+dY*10, worldZ + dZ*10);
-	glEnd();
 
 }
 
+void drawRay(){
+	glBegin(GL_LINES);
+		glColor3f(1, 1, 1);
+		glVertex3f(cX, cY, cZ);
+		glVertex3f(worldX + deltaX * 10, worldY + deltaY * 10, worldZ + deltaZ * 10);
+	glEnd();
+
+	glutPostRedisplay();
+}
 
 /* display function - GLUT display callback function
  *		clears the screen, sets the camera position, draws the ground plane and movable box
@@ -508,19 +582,28 @@ void display(void)
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny);
 
 	drawShapes();
+	drawRay();
 
 	glutSwapBuffers();
 }
 
 /* main function - program entry point */
 int main(int argc, char** argv)
-{
+{	
+	drawHitBoxes = false;
 	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'SHIFT + wasd'\nQuit -> 'q'\n\n");
-	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 4);
+	sceneShapes[0].set(0.0, 0.0 , 0.0, 1.0, 4);
 	activeShapes[0] = true;
 
-	sceneShapes[1].set(3.0, 3.0 , 3.0, 1.0, 2);
+	sceneShapes[1].set(2.0, 3.0 , 3.0, 1.0, 2);
 	activeShapes[1] = true;
+
+	sceneShapes[2].set(-2.0, 2.0 , 2.0, 1.0, 1);
+	activeShapes[2] = true;
+
+	sceneShapes[3].set(2.0, -2.0 , 2.0, 1.0, 3);
+	activeShapes[3] = true;
+
 
 	sceneShapes[0].select();
 	glutInit(&argc, argv);		//starts up GLUT
