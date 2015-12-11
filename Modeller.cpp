@@ -182,6 +182,18 @@ float diff[4] = {2, 2,2, 2};
 float spec[4] = {0, 0, 1, 1};
 bool useLight = true;
 
+//Ray casting stuff
+
+//Coordinates of mouse click in the world
+int worldX;
+int worldY;
+int worldZ;
+
+//camPos coords when click occurs
+int cX;
+int cY;
+int cZ;
+
 
 /***************************************************************************************
 GENERAL FUNCTIONS
@@ -195,7 +207,6 @@ void cycleSelect(){
 		//If active and selected, deselect
 		if (activeShapes[i] && sceneShapes[i].isSelected()){
 			sceneShapes[i].deselect();
-			//printf("Shape #%i deselected\n", i);
 			previousSelection = i;
 			break;
 		}
@@ -211,7 +222,6 @@ void cycleSelect(){
 
 		if (activeShapes[nextToSelect] && !sceneShapes[nextToSelect].isSelected()){
 			sceneShapes[nextToSelect].select();
-			//printf("Shape #%i selected\n", nextToSelect);
 			break;
 		}
 
@@ -220,8 +230,42 @@ void cycleSelect(){
 	}
 }
 
+void mouseToWorld(int mouseX, int mouseY, int mouseZ){
+    GLint viewport[4];
+    GLdouble modelMatrix[16];   
+    GLdouble projectionMatrix[16];  
+
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
+    glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
+
+    //float winZ;
+    float winY = float(viewport[3] - mouseY);
+    //glReadPixels(mouseX, (int)winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+    double x, y, z;
+    gluUnProject((double)mouseX, winY, mouseZ, 
+        modelMatrix, projectionMatrix, viewport,
+        &x, &y, &z);
+    
+    worldX = x;
+    worldY = y;
+    worldZ = z;
+    printf("World coordinates are %i %i %i\n", worldX, worldY, worldZ);
+    //return (x, y, z);
+}
+
 //Cycles through all the points in a line, checks if each object on the list interects with it
-int rayCasting(float mouseX, float mouseY){
+int rayCasting(int mouseX, int mouseY){
+	mouseToWorld(mouseX, mouseY, 1);
+
+	float deltaX = (mouseX - worldX);
+	float deltaY = (mouseY - worldY);
+	float deltaZ = (0 - worldZ);
+
+	cX = camPos[0];
+	cY = camPos[1];
+	cZ = camPos[2];
 
 	return -1;
 }
@@ -231,6 +275,7 @@ void mouse(int btn, int state, int x, int y){
 		case GLUT_LEFT_BUTTON:
 			if(state==GLUT_DOWN){
 				printf("Mouse button pressed at %i %i \n", x, y);
+				rayCasting(x, y);
 			}
 			break;
 	}
@@ -377,7 +422,6 @@ void special(int key, int x, int y)
 }
 
 
-
 /***************************************************************************************
 THE REST (idk what to call them)
 ***************************************************************************************/
@@ -412,9 +456,15 @@ void drawShapes() {
 	for (int i = 0; i < 20; i++){//(sizeof(sceneShapes)/sizeof(*sceneShapes)); i++) {
 		if (activeShapes[i]) {
 			sceneShapes[i].draw();
-			//printf("\nShape #%i drawn.", i);
 		}
 	}
+	
+	glBegin(GL_LINES);
+		glColor3f(1, 1, 1);
+		glVertex3f(cX, cY, cZ);
+		glVertex3f(worldX, worldY, worldZ);
+	glEnd();
+
 }
 
 
@@ -444,13 +494,14 @@ void display(void)
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny);
 
 	drawShapes();
+
 	glutSwapBuffers();
 }
 
 /* main function - program entry point */
 int main(int argc, char** argv)
 {
-	printf("\nWelcome to Joseph's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'SHIFT + wasd'\nQuit -> 'q'\n\n");
+	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'SHIFT + wasd'\nQuit -> 'q'\n\n");
 	sceneShapes[0].set(1.0, 1.0 , 1.0, 2.0, 4);
 	activeShapes[0] = true;
 
@@ -464,9 +515,9 @@ int main(int argc, char** argv)
 
 	
 	glutInitWindowSize(800, 800);
-	glutInitWindowPosition(100, 100);
+	glutInitWindowPosition(300, 100);
 
-	glutCreateWindow("A3:Modelling   manaloja/1304227");	//creates the window
+	glutCreateWindow("A3:Modelling   manaloja/1304227 lopezsomething/#######");	//creates the window
 	glutDisplayFunc(display);	//registers "display" as the display callback function
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
