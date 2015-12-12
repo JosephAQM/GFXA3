@@ -123,6 +123,9 @@ public:
 		    case 4:
 		    	glutSolidTeapot(size);
 		    	break;
+		    case 5:
+		    	glutSolidCone(size , size, 10, 10);
+		    	break;
 		}
 
 		glPopMatrix(); 
@@ -162,6 +165,9 @@ public:
 		
 		else if (type == 4) //teapot
 			hitBoxSize = size * 2;
+
+		else if (type == 5) //cone
+			hitBoxSize = size * 1.5;
 
 	}
 
@@ -365,6 +371,7 @@ void addObject(int newType, int newSize){
 		if (!activeShapes[i]){
 			sceneShapes[i].set(0.0, 0.0 , 0.0, newSize, newType);
 			activeShapes[i] = true;
+			printf("hello %i\n", i);
 			break;
 		}
 	}
@@ -372,6 +379,12 @@ void addObject(int newType, int newSize){
 
 void removeObject(int objectNumber){
 	activeShapes[objectNumber] = false;
+}
+
+void removeAllObjects(){
+	for (int i = 0; i < 20; i++){
+		removeObject(i);
+	}
 }
 
 
@@ -394,6 +407,19 @@ void keyboard(unsigned char key, int x, int y)
 		//Cycle selection
 		case 'z':
 			cycleSelect();
+			break;
+
+		case 127:
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					removeObject(i);
+				}
+
+			break;
+		//Delete all objects
+		case 'v':
+		case 'V':
+			removeAllObjects();
 			break;
 
 		//Toggle light
@@ -566,8 +592,58 @@ void special(int key, int x, int y)
 			camPos[1] -= 0.1;
 			break;
 
+
 	}
 	glutPostRedisplay();
+}
+
+void menu(int value){
+	switch(value){
+		case 0:
+			printf("Added a Sphere object.\n");
+			addObject(1, 1);
+			break;
+
+		case 1:
+			printf("Added a Cube object.\n");
+			addObject(2, 1);
+			break;
+
+		case 2:
+			printf("Added a Torus object.\n");
+			addObject(3, 1);
+			break;
+
+		case 3:
+			printf("Added a Teapot object.\n");
+			addObject(4, 1);
+			break;
+
+		case 4:
+			printf("Added a Cone object.\n");
+			addObject(5, 1);
+			break;
+
+		case 5:
+			printf("Removed all objects.\n");
+			removeAllObjects();
+			break;
+		
+	}
+}
+
+void initMenu(){
+	int id = glutCreateMenu(menu);
+	glutSetMenu(id); //set main menu
+
+	glutAddMenuEntry("Add Sphere", 0);
+	glutAddMenuEntry("Add Cube", 1);
+	glutAddMenuEntry("Add Torus", 2);
+	glutAddMenuEntry("Add Teapot", 3);
+	glutAddMenuEntry("Add Cone", 4);
+	glutAddMenuEntry("Clear All Objects", 5);
+
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 
@@ -657,7 +733,7 @@ void display(void)
 int main(int argc, char** argv)
 {	
 	drawHitBoxes = false;
-	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nQuit -> 'q'\n\n");
+	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nRemove selected object -> 'Backspace'\nRemove all objects -> 'v'\nQuit -> 'q'\n\n");
 	sceneShapes[0].set(0.0, 0.0 , 0.0, 1.0, 4);
 	activeShapes[0] = true;
 
@@ -673,6 +749,8 @@ int main(int argc, char** argv)
 
 	sceneShapes[0].select();
 	glutInit(&argc, argv);		//starts up GLUT
+	initMenu();
+
 	
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
@@ -685,6 +763,7 @@ int main(int argc, char** argv)
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
+	initMenu();
 
 	//Culling
 	//glEnable(GL_CULL_FACE);
