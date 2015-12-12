@@ -68,6 +68,7 @@ public:
 		selected = false;
 		type = inputType;
 		size = inputSize;
+		generateHitBox();
 	}
 
 	//Getters
@@ -204,6 +205,7 @@ GLOBALS
 ***************************************************************************************/
 
 //Initialize array holding all scene objects (Shapes)
+int numberOfShapes = 20;
 Shape sceneShapes[20];
 bool activeShapes[20]; //Because I don't know how pointers work
 
@@ -357,6 +359,21 @@ void mouse(int btn, int state, int x, int y){
 			}
 			break;
 	}
+}
+
+void addObject(int newType, int newSize){
+	//Loop through object array and look for an empty slot
+	for (int i = 0; i < numberOfShapes; i++){
+		if (!activeShapes[i]){
+			sceneShapes[i].set(0.0, 0.0 , 0.0, newSize, newType);
+			activeShapes[i] = true;
+			break;
+		}
+	}
+}
+
+void removeObject(int objectNumber){
+	activeShapes[objectNumber] = false;
 }
 
 
