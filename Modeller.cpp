@@ -733,7 +733,7 @@ void display(void)
 int main(int argc, char** argv)
 {	
 	drawHitBoxes = false;
-	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nRemove selected object -> 'Backspace'\nRemove all objects -> 'v'\nQuit -> 'q'\n\n");
+	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nSelect object -> Left click\nAdd new object -> Right Click\nMove selected object -> 'wasd, rf'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nRemove selected object -> 'Backspace'\nRemove all objects -> 'v'\nQuit -> 'q'\n\n");
 	sceneShapes[0].set(0.0, 0.0 , 0.0, 1.0, 4);
 	activeShapes[0] = true;
 
