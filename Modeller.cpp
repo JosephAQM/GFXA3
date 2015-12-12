@@ -100,6 +100,7 @@ public:
 	void draw(){
 		glPushMatrix();
 
+		glTranslated(xPos,yPos,zPos);
 		glRotatef(xRot, 1.0, 0.0, 0.0);
 		glRotatef(yRot, 0.0, 1.0, 0.0);
 		glRotatef(zRot, 0.0, 0.0, 1.0);
@@ -108,9 +109,6 @@ public:
     		glColor3d(0.1 , 0.1, 0.1); 
  		else
  			glColor3d(1, 0, 0);
-
-
-		glTranslated(xPos,yPos,zPos);
 
 		switch (type){
 			case 1:
@@ -399,8 +397,8 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 
 		//Toggle light
-		case 'l':
-		case 'L':
+		case 'p':
+		case 'P':
 			if (useLight) {
 				glDisable(GL_LIGHTING);
 				useLight = false;
@@ -412,16 +410,16 @@ void keyboard(unsigned char key, int x, int y)
 			}
 			break;
 
-		case 'x':
-		case 'X':
+		case 'c':
+		case 'C':
 			for (int i = 0; i < 20; i++){
 				if (activeShapes[i] && sceneShapes[i].isSelected())
 					sceneShapes[i].increaseSize(0.1);
 			}
 			break;
 
-		case 'c':
-		case 'C':
+		case 'x':
+		case 'X':
 			for (int i = 0; i < 20; i++){
 				if (activeShapes[i] && sceneShapes[i].isSelected())
 					sceneShapes[i].decreaseSize(0.1);
@@ -483,6 +481,57 @@ void keyboard(unsigned char key, int x, int y)
 			else
 				drawHitBoxes = true;
 			break;
+
+		case 'i':
+		case 'I':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(-5,0,0);
+			}
+			break;
+
+		case 'k':
+		case 'K':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(5,0,0);
+			}
+			break;
+
+		case 'j':
+		case 'J':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(0,-5,0);
+			}
+			break;
+
+		case 'l':
+		case 'L':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(0,5,0);
+			}
+			break;
+
+		case 'u':
+		case 'U':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(0,0,5);
+			}
+			break;
+
+		case 'o':
+		case 'O':
+			for (int i = 0; i < 20; i++){
+				if (activeShapes[i] && sceneShapes[i].isSelected())
+					sceneShapes[i].rotate(0,0,-5);
+			}
+			break;
+
+
+
 			
 	}
 	glutPostRedisplay();
@@ -608,7 +657,7 @@ void display(void)
 int main(int argc, char** argv)
 {	
 	drawHitBoxes = false;
-	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'SHIFT + wasd'\nQuit -> 'q'\n\n");
+	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nMove selected object -> 'wasd'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nQuit -> 'q'\n\n");
 	sceneShapes[0].set(0.0, 0.0 , 0.0, 1.0, 4);
 	activeShapes[0] = true;
 
