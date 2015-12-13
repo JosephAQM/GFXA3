@@ -3,8 +3,12 @@ Joseph Manalo
 1304227
 manaloja
 
+Gabriel Lopez
+1310514
+lopezdg
+
 SE 3GC3 Assignment 3
-Saturday, December 5, 2015
+Saturday, December 12, 2015
 */
 
 #ifdef __APPLE__
@@ -39,7 +43,7 @@ private:
 	//Whether the shape is curently selected by user or not
 	bool selected;
 
-	//1 = sphere, 2 = cube, 3 = torus, 4 = teapot
+	//1 = sphere, 2 = cube, 3 = torus, 4 = teapot, 5 = cone
 	int type;
 
 	//Sizes
@@ -227,8 +231,6 @@ float diff[4] = {2, 2,2, 2};
 float spec[4] = {0, 0, 1, 1};
 bool useLight = true;
 
-//Ray casting stuff
-
 //Coordinates of mouse click in the world
 float worldX;
 float worldY;
@@ -299,9 +301,7 @@ void mouseToWorld(int mouseX, int mouseY, int mouseZ){
     glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
     glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
 
-    //float winZ;
     float winY = float(viewport[3] - mouseY);
-    //glReadPixels(mouseX, (int)winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
 
     double x, y, z;
     gluUnProject((double)mouseX, winY, mouseZ, 
@@ -311,8 +311,6 @@ void mouseToWorld(int mouseX, int mouseY, int mouseZ){
     worldX = x;
     worldY = y;
     worldZ = z;
-    printf("World coordinates are %i %i %i\n", worldX, worldY, worldZ);
-    //return (x, y, z);
 }
 
 //Cycles through all the points in a line, checks if each object on the list interects with it
@@ -339,7 +337,6 @@ int rayCasting(int mouseX, int mouseY){
 		for (int j = 0; j < 20; j++){
 			if (activeShapes[j]){
 				if(sceneShapes[j].isInHitBox(linePointX, linePointY, linePointZ)){
-					printf("Selected: %i", j);
 					return j;
 				}
 			}
@@ -371,7 +368,6 @@ void addObject(int newType, int newSize){
 		if (!activeShapes[i]){
 			sceneShapes[i].set(0.0, 0.0 , 0.0, newSize, newType);
 			activeShapes[i] = true;
-			printf("hello %i\n", i);
 			break;
 		}
 	}
@@ -733,7 +729,8 @@ void display(void)
 int main(int argc, char** argv)
 {	
 	drawHitBoxes = false;
-	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nSelect object -> Left click\nAdd new object -> Right Click\nMove selected object -> 'wasd, rf'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nRemove selected object -> 'Backspace'\nRemove all objects -> 'v'\nQuit -> 'q'\n\n");
+	printf("\nWelcome to Joseph and Gabriel's Modelling Assignment!\nmanaloja/1304227 lopezdg/1310514\n\nControls:\nCamera movement -> Arrow Keys\nCycle Select -> 'z'\nSelect object -> Left click\nAdd new object -> Right Click\nMove selected object -> 'wasd, rf'\nRotate selected object -> 'ij, kl, uo'\nToggle Lights -> p\nEnlarge selected object -> c\nShrink selected object -> x\nRemove selected object -> 'Backspace'\nRemove all objects -> 'v'\nQuit -> 'q'\n\n");
+	printf("All assignment requirements are done except for textures, saving/loading, and the bonus feature\n");
 	sceneShapes[0].set(0.0, 0.0 , 0.0, 1.0, 4);
 	activeShapes[0] = true;
 
@@ -758,7 +755,7 @@ int main(int argc, char** argv)
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(300, 100);
 
-	glutCreateWindow("A3:Modelling   manaloja/1304227 lopezsomething/#######");	//creates the window
+	glutCreateWindow("A3:Modelling   manaloja/1304227 lopezdg/1310514");	//creates the window
 	glutDisplayFunc(display);	//registers "display" as the display callback function
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
